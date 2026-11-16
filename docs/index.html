@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Отзывы по брендам</title>
+<style>
+:root{
+  --bg:#f6f5f1;--card:#fff;--ink:#1c1b19;--mute:#6f6c66;--line:#e4e1d9;
+  --accent:#2f5d50;--accent-soft:#e3ede9;--neg:#b8452f;--mid:#c9a13b;--pos:#3f8a5f;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#161614;--card:#1f1f1c;--ink:#ecebe6;--mute:#9a978f;--line:#33322e;
+  --accent:#7fc0a9;--accent-soft:#24332e;--neg:#e0705a;--mid:#d9b659;--pos:#6fbf8f;
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:1100px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:22px;margin:0 0 2px;letter-spacing:-.01em}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);margin:0 0 12px;font-weight:600}
+.sub{color:var(--mute);font-size:13px;margin-bottom:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+label{display:block;font-size:12px;color:var(--mute);margin-bottom:4px}
+select,input{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.chip{border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:6px 12px;border-radius:999px;cursor:pointer;font:inherit;font-size:14px}
+.chip.on{background:var(--accent);border-color:var(--accent);color:var(--card)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.kpi b{display:block;font-size:26px;letter-spacing:-.02em}
+.kpi span{font-size:12px;color:var(--mute)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-size:12px;color:var(--mute);font-weight:500;padding:4px 8px 8px 0}
+td{padding:8px 8px 8px 0;border-top:1px solid var(--line);vertical-align:middle}
+.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.dist{display:flex;height:10px;border-radius:5px;overflow:hidden;min-width:90px;background:var(--line)}
+.dist i{display:block;height:100%}
+.scroll{overflow-x:auto}
+.months{display:flex;align-items:flex-end;gap:4px;height:120px;overflow-x:auto;padding-top:18px}
+.month{flex:1 0 26px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;font-size:10px;color:var(--mute)}
+.month .bar{width:100%;border-radius:4px 4px 0 0;background:var(--accent);min-height:2px}
+.month em{font-style:normal;font-size:10px;color:var(--ink)}
+.words{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:560px){.words{grid-template-columns:1fr}}
+.word{display:inline-block;margin:0 6px 6px 0;padding:4px 9px;border-radius:6px;background:var(--bg);border:1px solid var(--line);cursor:pointer;font-size:13px;color:var(--ink)}
+.word small{color:var(--mute)}
+.rev{border-top:1px solid var(--line);padding:12px 0}
+.rev:first-child{border-top:0}
+.meta{font-size:12px;color:var(--mute);display:flex;flex-wrap:wrap;gap:4px 10px;margin-bottom:4px}
+.stars{font-weight:600}
+.s-neg{color:var(--neg)}.s-mid{color:var(--mid)}.s-pos{color:var(--pos)}
+.rev p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.rev a{color:var(--accent)}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--card);padding:9px 14px;border-radius:8px;cursor:pointer;font:inherit}
+.btn.ghost{background:transparent;color:var(--accent)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:10px}
+.err{color:var(--neg)}
+.empty{color:var(--mute);padding:20px 0;text-align:center}
+details summary{cursor:pointer;color:var(--mute);font-size:13px}
+</style>
+</head>
+<body>
+<main>
+  <h1>Отзывы по брендам</h1>
+  <div class="sub" id="sub">Загрузка…</div>
+
+  <div class="card">
+    <div class="chips" id="brands"></div>
+    <div class="filters">
+      <div><label>Рынок</label><select id="f-market"></select></div>
+      <div><label>Источник</label><select id="f-source"></select></div>
+      <div><label>Оценка</label><select id="f-rating">
+        <option value="">Все</option><option value="neg">Негатив (1–2★)</option>
+        <option value="mid">Нейтральные (3★)</option><option value="pos">Позитив (4–5★)</option>
+        <option value="none">Без оценки</option></select></div>
+      <div><label>С даты</label><input type="date" id="f-from"></div>
+      <div><label>По дату</label><input type="date" id="f-to"></div>
+      <div><label>Поиск по тексту</label><input type="search" id="f-q" placeholder="слово или фраза"></div>
+    </div>
+  </div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="card"><h2>Сравнение брендов и рынков</h2><div class="scroll" id="compare"></div></div>
+  <div class="card"><h2>Динамика: отзывов в месяц и средняя оценка</h2><div class="months" id="months"></div></div>
+  <div class="card"><h2>О чём пишут: частые слова</h2>
+    <div class="words">
+      <div><label>В негативных отзывах (1–2★)</label><div id="w-neg"></div></div>
+      <div><label>В позитивных отзывах (4–5★)</label><div id="w-pos"></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <h2 style="margin:0" id="list-title">Отзывы</h2>
+      <div><button class="btn ghost" id="csv">CSV</button> <button class="btn" id="xlsx">Excel</button></div>
+    </div>
+    <div id="list"></div>
+    <div style="text-align:center;margin-top:12px"><button class="btn ghost" id="more" hidden>Показать ещё</button></div>
+  </div>
+
+  <div class="card"><details><summary>Журнал последнего сбора</summary><div class="scroll" id="log"></div></details></div>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const SRC = {app_store: 'App Store', google_play: 'Google Play'};
+const srcName = s => SRC[s] || s;
+const STOP = new Set(('и в во не что он на я с со как а то все она так его но да ты к у же вы за бы по только ее её мне было вот от меня еще ещё нет о из ему теперь когда даже ну вдруг ли если уже или ни быть был него до вас нибудь опять уж вам ведь там потом себя ничего ей может они тут где есть надо ней для мы тебя их чем была сам чтоб без будто чего раз тоже себе под будет ж тогда кто этот того потому этого какой совсем ним здесь этом один почти мой тем чтобы нее сейчас были куда зачем всех никогда можно при наконец два об другой хоть после над больше тот через эти нас про всего них какая много разве три эту моя впрочем хорошо свою этой перед иногда лучше чуть том нельзя такой им более всегда конечно всю между это очень просто приложение приложения приложении приложением вообще который которые которая которое пока тоже также свой свои мои моё мое ваш ваше ваши весь вся всё этим стало стал стала было были быть если чтобы либо лишь еще какие каким такие такое такая the a an and or but of to in on for with is are was were be been it this that i you my me we they not no so as at by from have has had do does did can will just very app its your our if when what all one out up too than then there their them more get got use using would could'.split(' ')));
+let ALL = [], META = {}, state = {brands: new Set(), shown: 50}, view = [];
+
+const bucket = r => r == null ? 'none' : r <= 2 ? 'neg' : r < 4 ? 'mid' : 'pos';
+const pct = (a, b) => b ? Math.round(a / b * 100) + '%' : '—';
+const avg = rows => { const v = rows.filter(r => r.rating != null); return v.length ? (v.reduce((s, r) => s + r.rating, 0) / v.length).toFixed(2) : '—'; };
+
+function fillSelect(sel, values, fmt) {
+  sel.replaceChildren(new Option('Все', ''));
+  values.forEach(v => sel.add(new Option(fmt ? fmt(v) : v, v)));
+}
+
+function init() {
+  const uniq = k => [...new Set(ALL.map(r => r[k]))].filter(Boolean).sort();
+  const box = $('brands');
+  uniq('brand').forEach(b => {
+    const c = el('button', 'chip', b);
+    c.onclick = () => { state.brands.has(b) ? state.brands.delete(b) : state.brands.add(b); c.classList.toggle('on'); state.shown = 50; render(); };
+    box.append(c);
+  });
+  fillSelect($('f-market'), uniq('market'), m => m.toUpperCase());
+  fillSelect($('f-source'), uniq('source'), srcName);
+  ['f-market', 'f-source', 'f-rating', 'f-from', 'f-to', 'f-q'].forEach(id => $(id).addEventListener('input', () => { state.shown = 50; render(); }));
+  $('more').onclick = () => { state.shown += 50; renderList(); };
+  $('csv').onclick = exportCsv; $('xlsx').onclick = exportXlsx;
+  const upd = META.updated ? new Date(META.updated).toLocaleString('ru-RU', {dateStyle: 'medium', timeStyle: 'short'}) : '—';
+  $('sub').textContent = `В базе ${ALL.length.toLocaleString('ru-RU')} отзывов · обновлено ${upd}`;
+  renderLog(); render();
+}
+
+function filtered() {
+  const m = $('f-market').value, s = $('f-source').value, rt = $('f-rating').value;
+  const from = $('f-from').value, to = $('f-to').value, q = $('f-q').value.trim().toLowerCase();
+  return ALL.filter(r =>
+    (!state.brands.size || state.brands.has(r.brand)) && (!m || r.market === m) && (!s || r.source === s) &&
+    (!rt || bucket(r.rating) === rt) && (!from || (r.date && r.date >= from)) && (!to || (r.date && r.date <= to)) &&
+    (!q || (r.title + ' ' + r.text).toLowerCase().includes(q)));
+}
+
+function render() {
+  view = filtered();
+  const n = view.length, rated = view.filter(r => r.rating != null);
+  const neg = rated.filter(r => r.rating <= 2).length, pos = rated.filter(r => r.rating >= 4).length;
+  $('kpis').replaceChildren(...[[n.toLocaleString('ru-RU'), 'отзывов в выборке'], [avg(view), 'средняя оценка'],
+    [pct(neg, rated.length), 'негатив (1–2★)'], [pct(pos, rated.length), 'позитив (4–5★)']].map(([v, l]) => {
+      const k = el('div', 'kpi'); k.append(el('b', '', v), el('span', '', l)); return k; }));
+  renderCompare(); renderMonths(); renderWords(); renderList();
+}
+
+function renderCompare() {
+  const groups = new Map();
+  view.forEach(r => { const k = r.brand + '|' + r.market + '|' + r.source; (groups.get(k) || groups.set(k, []).get(k)).push(r); });
+  if (!groups.size) return $('compare').replaceChildren(el('div', 'empty', 'Нет данных'));
+  const t = el('table'); const h = t.insertRow();
+  ['Бренд', 'Рынок', 'Источник', 'Отзывов', 'Средняя', 'Негатив', 'Распределение 1★→5★'].forEach((x, i) => { const th = el('th', i > 2 && i < 6 ? 'num' : '', x); h.append(th); });
+  [...groups.entries()].sort().forEach(([k, rows]) => {
+    const [b, m, s] = k.split('|'), rated = rows.filter(r => r.rating != null);
+    const tr = t.insertRow();
+    [b, m.toUpperCase(), srcName(s)].forEach(x => tr.append(el('td', '', x)));
+    tr.append(el('td', 'num', rows.length.toLocaleString('ru-RU')), el('td', 'num', avg(rows)),
+      el('td', 'num', pct(rated.filter(r => r.rating <= 2).length, rated.length)));
+    const d = el('div', 'dist'), cols = ['var(--neg)', 'var(--neg)', 'var(--mid)', 'var(--pos)', 'var(--pos)'];
+    [1, 2, 3, 4, 5].forEach((st, i) => { const c = rated.filter(r => Math.round(r.rating) === st).length; const seg = el('i');
+      seg.style.width = (rated.length ? c / rated.length * 100 : 0) + '%'; seg.style.background = cols[i]; seg.style.opacity = (st === 2 || st === 4) ? .6 : 1;
+      seg.title = st + '★: ' + c; d.append(seg); });
+    const td = el('td'); td.append(d); tr.append(td);
+  });
+  $('compare').replaceChildren(t);
+}
+
+function renderMonths() {
+  const by = new Map();
+  view.forEach(r => { if (!r.date) return; const k = r.date.slice(0, 7); (by.get(k) || by.set(k, []).get(k)).push(r); });
+  const keys = [...by.keys()].sort().slice(-24);
+  if (!keys.length) return $('months').replaceChildren(el('div', 'empty', 'Нет данных с датами'));
+  const max = Math.max(...keys.map(k => by.get(k).length));
+  $('months').replaceChildren(...keys.map(k => {
+    const rows = by.get(k), m = el('div', 'month');
+    const bar = el('div', 'bar'); bar.style.height = Math.max(2, rows.length / max * 100) + '%';
+    m.title = `${k}: ${rows.length} отзывов, средняя ${avg(rows)}`;
+    m.append(el('em', '', avg(rows)), bar, el('span', '', k.slice(5) + '.' + k.slice(2, 4))); return m; }));
+}
+
+function topWords(rows) {
+  const cnt = new Map();
+  rows.forEach(r => { new Set(((r.title + ' ' + r.text).toLowerCase().match(/[a-zа-яёіўї'’-]{4,}/gi) || []).filter(w => !STOP.has(w)))
+    .forEach(w => cnt.set(w, (cnt.get(w) || 0) + 1)); });
+  return [...cnt.entries()].filter(([, c]) => c > 1).sort((a, b) => b[1] - a[1]).slice(0, 25);
+}
+function renderWords() {
+  [['w-neg', r => r.rating != null && r.rating <= 2], ['w-pos', r => r.rating != null && r.rating >= 4]].forEach(([id, f]) => {
+    const words = topWords(view.filter(f));
+    $(id).replaceChildren(...(words.length ? words.map(([w, c]) => { const b = el('button', 'word', w + ' '); b.append(el('small', '', c));
+      b.onclick = () => { $('f-q').value = w; state.shown = 50; render(); window.scrollTo({top: $('list-title').offsetTop - 20, behavior: 'smooth'}); }; return b; })
+      : [el('div', 'empty', 'Недостаточно отзывов')]));
+  });
+}
+
+function renderList() {
+  $('list-title').textContent = `Отзывы (${view.length.toLocaleString('ru-RU')})`;
+  if (!view.length) { $('more').hidden = true; return $('list').replaceChildren(el('div', 'empty', ALL.length ? 'Под фильтры ничего не подходит' : 'База пока пуста — запустите сбор во вкладке Actions')); }
+  $('list').replaceChildren(...view.slice(0, state.shown).map(r => {
+    const d = el('div', 'rev'), m = el('div', 'meta');
+    if (r.rating != null) m.append(el('span', 'stars s-' + bucket(r.rating), '★'.repeat(Math.round(r.rating)) + '☆'.repeat(5 - Math.round(r.rating))));
+    [r.brand, r.market.toUpperCase(), srcName(r.source), r.date, r.version && 'v' + r.version, r.product].filter(Boolean).forEach(x => m.append(el('span', '', x)));
+    if (/^https?:\/\//.test(r.url)) { const a = el('a', '', 'источник'); a.href = r.url; a.target = '_blank'; a.rel = 'noopener'; m.append(a); }
+    d.append(m); if (r.title) d.append(el('b', '', r.title)); d.append(el('p', '', r.text)); return d; }));
+  $('more').hidden = view.length <= state.shown;
+}
+
+function renderLog() {
+  const log = META.log || [];
+  if (!log.length) return $('log').replaceChildren(el('div', 'empty', 'Сбор ещё не запускался'));
+  const t = el('table');
+  log.forEach(e => { const tr = t.insertRow();
+    [e.brand, (e.market || '').toUpperCase(), srcName(e.source)].forEach(x => tr.append(el('td', '', x)));
+    tr.append(el('td', e.ok ? 'num' : 'err', e.ok ? e.count + ' отзывов' : 'Ошибка: ' + e.error)); });
+  $('log').replaceChildren(t);
+}
+
+const COLS = [['brand', 'Бренд'], ['market', 'Рынок'], ['source', 'Источник'], ['date', 'Дата'], ['rating', 'Оценка'], ['title', 'Заголовок'], ['text', 'Текст'], ['version', 'Версия'], ['product', 'Продукт'], ['url', 'Ссылка']];
+const rowsForExport = () => view.map(r => Object.fromEntries(COLS.map(([k, t]) => [t, k === 'source' ? srcName(r[k]) : r[k] ?? ''])));
+function download(blob, name) { const a = el('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); }
+function exportCsv() {
+  const esc = v => { let s = String(v ?? ''); if (/^[=+\-@]/.test(s)) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; };
+  const lines = [COLS.map(c => esc(c[1])).join(';'), ...rowsForExport().map(r => Object.values(r).map(esc).join(';'))];
+  download(new Blob(['﻿' + lines.join('\r\n')], {type: 'text/csv;charset=utf-8'}), 'reviews.csv');
+}
+function exportXlsx() {
+  const go = () => { const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rowsForExport()), 'Отзывы'); XLSX.writeFile(wb, 'reviews.xlsx'); };
+  if (window.XLSX) return go();
+  const s = el('script'); s.src = 'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js';
+  s.onload = go; s.onerror = () => { exportCsv(); }; document.head.append(s);
+}
+
+Promise.all([fetch('data/reviews.json', {cache: 'no-store'}).then(r => r.json()), fetch('data/meta.json', {cache: 'no-store'}).then(r => r.json()).catch(() => ({}))])
+  .then(([a, m]) => { ALL = a.sort((x, y) => (y.date || '').localeCompare(x.date || '')); META = m; init(); })
+  .catch(() => { $('sub').textContent = 'Не удалось загрузить данные (data/reviews.json).'; });
+</script>
+</body>
+</html>

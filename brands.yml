@@ -1,0 +1,32 @@
+# Список брендов для сбора отзывов.
+# Измените этот файл и сохраните (Commit) — сбор запустится автоматически.
+#
+# Поля бренда:
+#   name            — название бренда (так он будет называться в интерфейсе)
+#   markets         — коды стран для App Store и Google Play: by, ru, kz, us, gb, de, pl ...
+#   app_store_id    — число из ссылки apps.apple.com/.../id123456789   (необязательно)
+#   google_play_id  — id из ссылки play.google.com/...?id=com.example  (необязательно)
+#                     если id не указаны, приложение ищется по названию (поле search или name);
+#                     найденное приложение видно в колонке «Продукт» — проверьте, что это оно
+#   app_store: false / google_play: false — выключить один из сторов
+#   stores: false   — бренд без приложений, только ссылки
+#   urls            — любые открытые страницы с отзывами (Trustpilot, отзовики, магазины)
+#                     можно просто ссылкой или так: {url: "...", market: by}
+
+limits:
+  app_store: 500      # максимум, который отдаёт Apple на одну страну
+  google_play: 1000   # на одну страну
+
+brands:
+  # Примеры — замените на свои бренды.
+  - name: Яндекс Go
+    markets: [by, ru]
+    app_store_id: 472650686
+    google_play_id: ru.yandex.taxi
+
+  - name: Duolingo
+    markets: [us]
+    app_store_id: 570060128
+    google_play_id: com.duolingo
+    # urls:
+    #   - https://www.trustpilot.com/review/duolingo.com
