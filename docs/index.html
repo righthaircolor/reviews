@@ -106,7 +106,7 @@ details summary{cursor:pointer;color:var(--mute);font-size:13px}
 <script>
 const $ = id => document.getElementById(id);
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
-const SRC = {app_store: 'App Store', google_play: 'Google Play'};
+const SRC = {app_store: 'App Store', google_play: 'Google Play', rustore: 'RuStore', onliner: 'Onliner', '2gis': '2ГИС', yandex_maps: 'Яндекс Карты'};
 const srcName = s => SRC[s] || s;
 const mkName = m => !m ? '' : m.startsWith('lang-') ? 'язык ' + m.slice(5).toUpperCase() : m.toUpperCase();
 const STOP = new Set(('и в во не что он на я с со как а то все она так его но да ты к у же вы за бы по только ее её мне было вот от меня еще ещё нет о из ему теперь когда даже ну вдруг ли если уже или ни быть был него до вас нибудь опять уж вам ведь там потом себя ничего ей может они тут где есть надо ней для мы тебя их чем была сам чтоб без будто чего раз тоже себе под будет ж тогда кто этот того потому этого какой совсем ним здесь этом один почти мой тем чтобы нее сейчас были куда зачем всех никогда можно при наконец два об другой хоть после над больше тот через эти нас про всего них какая много разве три эту моя впрочем хорошо свою этой перед иногда лучше чуть том нельзя такой им более всегда конечно всю между это очень просто приложение приложения приложении приложением вообще который которые которая которое пока тоже также свой свои мои моё мое ваш ваше ваши весь вся всё этим стало стал стала было были быть если чтобы либо лишь еще какие каким такие такое такая the a an and or but of to in on for with is are was were be been it this that i you my me we they not no so as at by from have has had do does did can will just very app its your our if when what all one out up too than then there their them more get got use using would could'.split(' ')));
@@ -225,7 +225,7 @@ function renderLog() {
   const t = el('table');
   log.forEach(e => { const tr = t.insertRow();
     [e.brand, mkName(e.market), /^https?:/.test(e.source) ? new URL(e.source).hostname : srcName(e.source)].forEach(x => tr.append(el('td', '', x)));
-    tr.append(el('td', e.ok ? 'num' : 'err', e.ok ? e.count + ' отзывов' : 'Ошибка: ' + e.error)); });
+    tr.append(el('td', e.ok ? 'num' : 'err', !e.ok ? 'Ошибка: ' + e.error : e.note ? 'нет данных' : e.count + ' отзывов')); });
   $('log').replaceChildren(t);
 }
 
