@@ -1,4 +1,8 @@
-"""Google Play: отзывы по стране и языку через библиотеку google-play-scraper."""
+"""Google Play: отзывы через библиотеку google-play-scraper.
+
+Google Play делит отзывы по ЯЗЫКУ, а не по стране: для by и ru приходит один и тот же
+русскоязычный поток. Поэтому сбор идёт один раз на язык, рынок помечается как lang-ru и т.п.
+"""
 from __future__ import annotations
 
 from ..models import Review
@@ -18,27 +22,26 @@ def find_app(name: str, country: str, lang: str) -> tuple[str, str] | None:
     return None
 
 
-def to_review(item: dict, brand: str, country: str, app_id: str, product: str) -> Review:
+def to_review(item: dict, brand: str, lang: str, app_id: str, product: str) -> Review:
     at = item.get("at")
     return Review(
         brand=brand,
         source="google_play",
-        market=country,
+        market=f"lang-{lang}",
         date=at.strftime("%Y-%m-%d") if at else "",
         rating=float(item["score"]) if item.get("score") else None,
         text=item.get("content") or "",
         version=item.get("reviewCreatedVersion") or "",
-        url=f"https://play.google.com/store/apps/details?id={app_id}&gl={country}",
+        url=f"https://play.google.com/store/apps/details?id={app_id}&hl={lang}",
         product=product,
-        id=f"gp-{country}-{item.get('reviewId', '')}" if item.get("reviewId") else "",
+        id=f"gp-{lang}-{item.get('reviewId', '')}" if item.get("reviewId") else "",
     ).finalize()
 
 
-def collect(brand: str, country: str, app_id: str | None, limit: int = 1000,
-            lang: str | None = None) -> list[Review]:
+def collect(brand: str, lang: str, app_id: str | None, limit: int = 1000,
+            country: str = "us") -> list[Review]:
     from google_play_scraper import Sort, reviews
 
-    lang = lang or LANG.get(country, "en")
     product = ""
     if not app_id:
         found = find_app(brand, country, lang)
@@ -54,10 +57,10 @@ def collect(brand: str, country: str, app_id: str | None, limit: int = 1000,
         )
         if not batch:
             break
-        out.extend(to_review(i, brand, country, app_id, product) for i in batch)
+        out.extend(to_review(i, brand, lang, app_id, product) for i in batch)
         if token is None or getattr(token, "token", None) is None:
             break
     out = [r for r in out if r.text]
     if not out:
-        raise RuntimeError(f"0 отзывов для {app_id} ({country}/{lang}) — проверьте id и страну")
+        raise RuntimeError(f"0 отзывов для {app_id} (язык {lang}) — проверьте id")
     return out

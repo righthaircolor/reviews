@@ -53,6 +53,30 @@ def parse_feed(data: dict, brand: str, country: str, app_id: str, product: str) 
     return out
 
 
+def _page(country, app_id, page, brand, product):
+    """Одна страница ленты: два варианта адреса, до трёх попыток (лента Apple нестабильна)."""
+    urls = [
+        f"https://itunes.apple.com/{country}/rss/customerreviews/page={page}/id={app_id}/sortby=mostrecent/json",
+        f"https://itunes.apple.com/rss/customerreviews/page={page}/id={app_id}/sortby=mostrecent/json?cc={country}",
+    ]
+    status = None
+    for attempt in range(3):
+        for url in urls:
+            try:
+                r = requests.get(url, headers=UA, timeout=30)
+                status = r.status_code
+                if r.status_code == 200:
+                    batch = parse_feed(r.json(), brand, country, app_id, product)
+                    if batch:
+                        return batch, status
+            except (requests.RequestException, ValueError) as e:
+                status = type(e).__name__
+        if page > 1:  # пустая страница после первой — обычно конец ленты
+            break
+        time.sleep(2 * (attempt + 1))
+    return [], status
+
+
 def collect(brand: str, country: str, app_id: str | None, limit: int = 500) -> list[Review]:
     product = ""
     if not app_id:
@@ -61,15 +85,9 @@ def collect(brand: str, country: str, app_id: str | None, limit: int = 500) -> l
             raise RuntimeError(f"приложение «{brand}» не найдено в App Store ({country})")
         app_id, product = found
     out: list[Review] = []
+    status = None
     for page in range(1, MAX_PAGES + 1):
-        url = (
-            f"https://itunes.apple.com/{country}/rss/customerreviews/"
-            f"page={page}/id={app_id}/sortby=mostrecent/json"
-        )
-        r = requests.get(url, headers=UA, timeout=30)
-        if r.status_code != 200:
-            break
-        batch = parse_feed(r.json(), brand, country, str(app_id), product)
+        batch, status = _page(country, str(app_id), page, brand, product)
         if not batch:
             break
         out.extend(batch)
@@ -77,5 +95,6 @@ def collect(brand: str, country: str, app_id: str | None, limit: int = 500) -> l
             break
         time.sleep(0.5)
     if not out:
-        raise RuntimeError(f"0 отзывов для id {app_id} ({country}) — проверьте id и страну")
+        raise RuntimeError(f"0 отзывов для id {app_id} ({country}), ответ Apple: {status} — "
+                           "проверьте id и страну; лента Apple иногда временно пустая")
     return out[:limit]

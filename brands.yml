@@ -3,7 +3,10 @@
 #
 # Поля бренда:
 #   name            — название бренда (так он будет называться в интерфейсе)
-#   markets         — коды стран для App Store и Google Play: by, ru, kz, us, gb, de, pl ...
+#   markets         — коды стран: by, ru, kz, us, gb, de, pl ...
+#                     App Store делит отзывы по странам. Google Play — по ЯЗЫКУ: для by и ru
+#                     это один русскоязычный поток, в интерфейсе он помечен «язык RU»
+#   google_play_langs — дополнительные языки Google Play, например [be, en]   (необязательно)
 #   app_store_id    — число из ссылки apps.apple.com/.../id123456789   (необязательно)
 #   google_play_id  — id из ссылки play.google.com/...?id=com.example  (необязательно)
 #                     если id не указаны, приложение ищется по названию (поле search или name);

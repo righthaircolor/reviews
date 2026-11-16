@@ -37,12 +37,20 @@ def run(config: dict) -> tuple[list[dict], list[dict]]:
     for b in config.get("brands") or []:
         name = b["name"]
         stores = b.get("stores", True)
-        for market in b.get("markets") or []:
-            market = str(market).lower()
-            if stores and b.get("app_store", True) is not False:
+        markets = [str(m).lower() for m in b.get("markets") or []]
+        if stores and b.get("app_store", True) is not False:
+            for market in markets:
                 attempt(name, "app_store", market, lambda: _as(b, name, market, limits))
-            if stores and b.get("google_play", True) is not False:
-                attempt(name, "google_play", market, lambda: _gp(b, name, market, limits))
+        if stores and b.get("google_play", True) is not False:
+            # Google Play делит отзывы по языку, а не по стране — один сбор на язык
+            langs = {}
+            for m in markets:
+                langs.setdefault(googleplay.LANG.get(m, "en"), m)
+            for lg in b.get("google_play_langs") or []:
+                langs.setdefault(str(lg).lower(), markets[0] if markets else "us")
+            for lang, country in langs.items():
+                attempt(name, "google_play", f"lang-{lang}",
+                        lambda: _gp(b, name, lang, country, limits))
         for u in b.get("urls") or []:
             url, market = (u, "global") if isinstance(u, str) else (u["url"], u.get("market", "global"))
             attempt(name, url, market, lambda: url_extract.collect(name, url, market))
@@ -58,9 +66,9 @@ def _as(b, name, market, limits):
     return got
 
 
-def _gp(b, name, market, limits):
-    got = googleplay.collect(b.get("search") or name, market, b.get("google_play_id"),
-                             limits.get("google_play", 1000))
+def _gp(b, name, lang, country, limits):
+    got = googleplay.collect(b.get("search") or name, lang, b.get("google_play_id"),
+                             limits.get("google_play", 1000), country)
     for r in got:
         r.brand = name
     return got

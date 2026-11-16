@@ -108,6 +108,7 @@ const $ = id => document.getElementById(id);
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 const SRC = {app_store: 'App Store', google_play: 'Google Play'};
 const srcName = s => SRC[s] || s;
+const mkName = m => !m ? '' : m.startsWith('lang-') ? 'язык ' + m.slice(5).toUpperCase() : m.toUpperCase();
 const STOP = new Set(('и в во не что он на я с со как а то все она так его но да ты к у же вы за бы по только ее её мне было вот от меня еще ещё нет о из ему теперь когда даже ну вдруг ли если уже или ни быть был него до вас нибудь опять уж вам ведь там потом себя ничего ей может они тут где есть надо ней для мы тебя их чем была сам чтоб без будто чего раз тоже себе под будет ж тогда кто этот того потому этого какой совсем ним здесь этом один почти мой тем чтобы нее сейчас были куда зачем всех никогда можно при наконец два об другой хоть после над больше тот через эти нас про всего них какая много разве три эту моя впрочем хорошо свою этой перед иногда лучше чуть том нельзя такой им более всегда конечно всю между это очень просто приложение приложения приложении приложением вообще который которые которая которое пока тоже также свой свои мои моё мое ваш ваше ваши весь вся всё этим стало стал стала было были быть если чтобы либо лишь еще какие каким такие такое такая the a an and or but of to in on for with is are was were be been it this that i you my me we they not no so as at by from have has had do does did can will just very app its your our if when what all one out up too than then there their them more get got use using would could'.split(' ')));
 let ALL = [], META = {}, state = {brands: new Set(), shown: 50}, view = [];
 
@@ -128,7 +129,7 @@ function init() {
     c.onclick = () => { state.brands.has(b) ? state.brands.delete(b) : state.brands.add(b); c.classList.toggle('on'); state.shown = 50; render(); };
     box.append(c);
   });
-  fillSelect($('f-market'), uniq('market'), m => m.toUpperCase());
+  fillSelect($('f-market'), uniq('market'), mkName);
   fillSelect($('f-source'), uniq('source'), srcName);
   ['f-market', 'f-source', 'f-rating', 'f-from', 'f-to', 'f-q'].forEach(id => $(id).addEventListener('input', () => { state.shown = 50; render(); }));
   $('more').onclick = () => { state.shown += 50; renderList(); };
@@ -166,7 +167,7 @@ function renderCompare() {
   [...groups.entries()].sort().forEach(([k, rows]) => {
     const [b, m, s] = k.split('|'), rated = rows.filter(r => r.rating != null);
     const tr = t.insertRow();
-    [b, m.toUpperCase(), srcName(s)].forEach(x => tr.append(el('td', '', x)));
+    [b, mkName(m), srcName(s)].forEach(x => tr.append(el('td', '', x)));
     tr.append(el('td', 'num', rows.length.toLocaleString('ru-RU')), el('td', 'num', avg(rows)),
       el('td', 'num', pct(rated.filter(r => r.rating <= 2).length, rated.length)));
     const d = el('div', 'dist'), cols = ['var(--neg)', 'var(--neg)', 'var(--mid)', 'var(--pos)', 'var(--pos)'];
@@ -212,7 +213,7 @@ function renderList() {
   $('list').replaceChildren(...view.slice(0, state.shown).map(r => {
     const d = el('div', 'rev'), m = el('div', 'meta');
     if (r.rating != null) m.append(el('span', 'stars s-' + bucket(r.rating), '★'.repeat(Math.round(r.rating)) + '☆'.repeat(5 - Math.round(r.rating))));
-    [r.brand, r.market.toUpperCase(), srcName(r.source), r.date, r.version && 'v' + r.version, r.product].filter(Boolean).forEach(x => m.append(el('span', '', x)));
+    [r.brand, mkName(r.market), srcName(r.source), r.date, r.version && 'v' + r.version, r.product].filter(Boolean).forEach(x => m.append(el('span', '', x)));
     if (/^https?:\/\//.test(r.url)) { const a = el('a', '', 'источник'); a.href = r.url; a.target = '_blank'; a.rel = 'noopener'; m.append(a); }
     d.append(m); if (r.title) d.append(el('b', '', r.title)); d.append(el('p', '', r.text)); return d; }));
   $('more').hidden = view.length <= state.shown;
@@ -223,13 +224,13 @@ function renderLog() {
   if (!log.length) return $('log').replaceChildren(el('div', 'empty', 'Сбор ещё не запускался'));
   const t = el('table');
   log.forEach(e => { const tr = t.insertRow();
-    [e.brand, (e.market || '').toUpperCase(), srcName(e.source)].forEach(x => tr.append(el('td', '', x)));
+    [e.brand, mkName(e.market), /^https?:/.test(e.source) ? new URL(e.source).hostname : srcName(e.source)].forEach(x => tr.append(el('td', '', x)));
     tr.append(el('td', e.ok ? 'num' : 'err', e.ok ? e.count + ' отзывов' : 'Ошибка: ' + e.error)); });
   $('log').replaceChildren(t);
 }
 
 const COLS = [['brand', 'Бренд'], ['market', 'Рынок'], ['source', 'Источник'], ['date', 'Дата'], ['rating', 'Оценка'], ['title', 'Заголовок'], ['text', 'Текст'], ['version', 'Версия'], ['product', 'Продукт'], ['url', 'Ссылка']];
-const rowsForExport = () => view.map(r => Object.fromEntries(COLS.map(([k, t]) => [t, k === 'source' ? srcName(r[k]) : r[k] ?? ''])));
+const rowsForExport = () => view.map(r => Object.fromEntries(COLS.map(([k, t]) => [t, k === 'source' ? srcName(r[k]) : k === 'market' ? mkName(r[k]) : r[k] ?? ''])));
 function download(blob, name) { const a = el('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); }
 function exportCsv() {
   const esc = v => { let s = String(v ?? ''); if (/^[=+\-@]/.test(s)) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; };

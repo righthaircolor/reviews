@@ -27,7 +27,7 @@ class T(unittest.TestCase):
     def test_gplay(self):
         r = googleplay.to_review({"reviewId": "a", "userName": "U", "content": "ok", "score": 4,
             "at": datetime.datetime(2026, 5, 1), "reviewCreatedVersion": None}, "B", "ru", "com.x", "X")
-        self.assertEqual((r.rating, r.date, r.id, r.version), (4.0, "2026-05-01", "gp-ru-a", ""))
+        self.assertEqual((r.rating, r.date, r.id, r.version, r.market), (4.0, "2026-05-01", "gp-ru-a", "", "lang-ru"))
     def test_url(self):
         items, how = url_extract.extract(HTML)
         self.assertEqual(len(items), 1); self.assertEqual(items[0]["rating"], 4.5); self.assertEqual(items[0]["date"], "2026-09-01")
