@@ -1,7 +1,7 @@
 {
- "updated": "2026-11-16T22:00:38+00:00",
- "total": 3500,
- "added": 3500,
+ "updated": "2026-11-16T22:27:09+00:00",
+ "total": 4666,
+ "added": 1166,
  "log": [
   {
    "brand": "Яндекс Go",
@@ -23,6 +23,20 @@
    "market": "lang-ru",
    "ok": true,
    "count": 1000
+  },
+  {
+   "brand": "Яндекс Go",
+   "source": "rustore",
+   "market": "ru",
+   "ok": true,
+   "count": 1000
+  },
+  {
+   "brand": "Dyson",
+   "source": "onliner",
+   "market": "by",
+   "ok": true,
+   "count": 153
   },
   {
    "brand": "Duolingo",
