@@ -13,6 +13,12 @@
 #                для точки в другой стране: - {id: 1234567890, market: by}
 #   urls:        [любые страницы с отзывами]     — можно так: - {url: "https://...", market: by}
 #
+# ── ТОЛЬКО ПРИ ЗАПУСКЕ С КОМПЬЮТЕРА (серверам GitHub эти площадки не отвечают) ─
+#   ru или by    → Wildberries подключается сам (ищет товары бренда; отзывы общие для стран)
+#                  свой запрос: wildberries: "dyson"     выключить: wildberries: false
+#   trustpilot:  домен компании, например duolingo.com   (рынок отзыва — страна автора)
+#   Как запускать — в README, раздел «Запуск с компьютера».
+#
 # ── ПОЛЯ БРЕНДА ────────────────────────────────────────────────────────────────
 #   name            — название бренда в интерфейсе
 #   markets         — коды стран: by, ru, kz, us, gb, de, pl ...
@@ -36,6 +42,8 @@ limits:              # максимум отзывов за один сбор н
   rustore: 1000
   onliner: 1000
   2gis: 500          # на один филиал
+  wildberries: 2000
+  trustpilot: 1000
 
 brands:
   # Примеры — замените на свои бренды.
@@ -44,6 +52,7 @@ brands:
     app_store_id: 472650686
     google_play_id: ru.yandex.taxi
     onliner: false             # товаров в каталоге нет
+    wildberries: false
 
   - name: Dyson                # товарный бренд в Беларуси: Onliner подключится сам
     markets: [by]
@@ -53,6 +62,7 @@ brands:
     markets: [us]
     app_store_id: 570060128
     google_play_id: com.duolingo
+    trustpilot: duolingo.com
 
   # Пример с точками на картах:
   # - name: Моя кофейня

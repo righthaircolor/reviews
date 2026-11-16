@@ -19,10 +19,16 @@ App Store делит отзывы по странам: `by`, `ru`, `us` соби
 Google Play делит их по языку: Беларусь и Россия приходят одним русскоязычным потоком («язык RU»).
 Имена авторов не сохраняются.
 
-**Не работают с серверов GitHub** (проверено 16.11.2026, площадки отвечают отказом или капчей):
-Wildberries, Ozon, Яндекс Маркет, Trustpilot, Reddit, iRecommend, TripAdvisor.
-Для них нужен запуск со своего компьютера или платный прокси-сервис.
-Google Maps отдаёт отзывы только через платный API и не больше 5 на точку.
+**Только при запуске с компьютера** (серверам GitHub эти площадки отвечают отказом):
+
+| Рынок | Источник | Как подключается |
+|---|---|---|
+| Россия, Беларусь | Wildberries | сам, поиском товаров бренда |
+| глобальный | Trustpilot | вручную: домен компании в поле `trustpilot` |
+
+**Пока не подключены:** Ozon, Яндекс Маркет, iRecommend, Reddit, TripAdvisor — им нужен настоящий
+браузер или платный прокси-сервис. Google Maps отдаёт отзывы только через платный API
+и не больше 5 на точку.
 
 ## Первый запуск (один раз)
 
@@ -44,12 +50,17 @@ Google Maps отдаёт отзывы только через платный API
 **Settings → Secrets and variables → Actions → New repository secret**, имя `ANTHROPIC_API_KEY`.
 Запросы к API платные. Сайты с защитой от ботов (Ozon, Wildberries, Amazon) с серверов GitHub обычно не отдаются.
 
-## Запуск на своём компьютере
+## Запуск с компьютера
 
-```
-pip install -r requirements.txt
-python -m collector
-python -m http.server -d docs 8000   # интерфейс: http://localhost:8000
-```
+Нужен для Wildberries и Trustpilot. Собирает все источники сразу и отправляет данные на сайт.
+
+Один раз:
+1. Установите [Python](https://www.python.org/downloads/) и [GitHub Desktop](https://desktop.github.com/).
+2. В GitHub Desktop: File → Clone repository → `righthaircolor/reviews`.
+
+Каждый раз: откройте папку репозитория и дважды щёлкните `run_local.command` (Mac)
+или `run_local.bat` (Windows). В конце появится «Готово».
+
+Посмотреть интерфейс без отправки: `python -m http.server -d docs 8000` → http://localhost:8000
 
 Собирайте только общедоступные отзывы и соблюдайте правила площадок.

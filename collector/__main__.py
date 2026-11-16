@@ -6,17 +6,21 @@ docs/data/reviews.json (без дублей) и пишет отчёт о зап�
 from __future__ import annotations
 
 import json
+import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
 import yaml
 
-from .sources import appstore, googleplay, onliner, rustore, twogis, url_extract, yandex_maps
+from .sources import (appstore, googleplay, onliner, rustore, trustpilot, twogis,
+                      url_extract, wildberries, yandex_maps)
 
 ROOT = Path(__file__).resolve().parent.parent
 CONFIG = ROOT / "brands.yml"
 DATA = ROOT / "docs" / "data"
+# эти площадки не отвечают серверам GitHub — собираются только при запуске с компьютера
+LOCAL = not os.environ.get("GITHUB_ACTIONS")
 
 
 def _list(v) -> list:
@@ -65,6 +69,18 @@ def jobs(b: dict, limits: dict):
     if on:
         q = on if isinstance(on, str) else search
         yield "onliner", "by", (lambda: onliner.collect(name, q, limits.get("onliner", 1000))), not isinstance(on, str)
+
+    if LOCAL:
+        # Wildberries: сам подключается для рынков ru и by (поиск товаров бренда)
+        wb = b.get("wildberries", bool({"ru", "by"} & set(markets)))
+        if wb:
+            q = wb if isinstance(wb, str) else search
+            m = "ru" if "ru" in markets or not markets else first
+            yield "wildberries", m, (lambda: wildberries.collect(
+                name, q, m, limits.get("wildberries", 2000))), not isinstance(wb, str)
+        for d in _list(b.get("trustpilot")):
+            yield "trustpilot", "global", (lambda d=d: trustpilot.collect(
+                name, d, limits.get("trustpilot", 1000))), False
 
     for item in _list(b.get("2gis")):
         v, m = _place(item, first if first != "global" else "ru")

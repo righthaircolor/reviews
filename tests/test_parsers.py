@@ -2,7 +2,7 @@
 import datetime, unittest
 from collector.__main__ import merge
 from collector.__main__ import jobs
-from collector.sources import appstore, googleplay, onliner, rustore, twogis, url_extract, yandex_maps
+from collector.sources import appstore, googleplay, onliner, rustore, trustpilot, twogis, url_extract, wildberries, yandex_maps
 
 FEED = {"feed": {"entry": [
     {"im:name": {"label": "App"}},
@@ -46,13 +46,32 @@ class T(unittest.TestCase):
         self.assertEqual((r.id, r.date), ("2gis-9", "2026-11-17"))
         self.assertEqual(twogis.branch_id("https://2gis.ru/moscow/firm/70000001234567/tab/reviews"), "70000001234567")
         self.assertEqual(yandex_maps.org_id("https://yandex.ru/maps/org/yandeks/1124715036/reviews/"), "1124715036")
+    def test_local_sources(self):
+        r = wildberries.parse_feedbacks({"feedbacks": [{"id": "a1", "text": "Хорошо", "pros": "", "cons": "Запах", "productValuation": 4,
+            "createdDate": "2026-10-01T10:00:00Z", "nmId": 5, "wbUserDetails": {"name": "N"}}, {"id": "a2", "text": ""}]}, "B", "ru", {"name": "Крем", "id": 5})
+        self.assertEqual(len(r), 1)
+        self.assertEqual((r[0].id, r[0].text, r[0].rating, r[0].product), ("wb-a1", "Хорошо\nМинусы: Запах", 4.0, "Крем"))
+        self.assertEqual(wildberries._products({"data": {"products": [1]}}), [1])
+        html = '<script id="__NEXT_DATA__" type="application/json">' + __import__("json").dumps({"props": {"pageProps": {
+            "filters": {"pagination": {"totalPages": 7}}, "reviews": [{"id": "r1", "title": "T", "text": "Good", "rating": 5,
+            "dates": {"publishedDate": "2026-11-01T00:00:00.000Z"}, "consumer": {"displayName": "Z", "countryCode": "DE"}}]}}}) + "</script>"
+        rs, pages = trustpilot.parse_page(html, "B", "x.com")
+        self.assertEqual((pages, rs[0].id, rs[0].market, rs[0].date), (7, "tp-r1", "de", "2026-11-01"))
+        self.assertNotIn("Z", rs[0].to_dict().values())
+        self.assertEqual(trustpilot.domain_of("https://www.trustpilot.com/review/duolingo.com?page=2"), "duolingo.com")
+        self.assertEqual(trustpilot.domain_of("https://www.duolingo.com/"), "duolingo.com")
     def test_jobs(self):
+        import collector.__main__ as cm
+        cm.LOCAL = False
         j = lambda b: [(s, m, a) for s, m, _, a in jobs(b, {})]
         self.assertEqual(j({"name": "A", "markets": ["by", "ru"], "google_play_id": "x.y", "onliner": False}),
             [("app_store", "by", False), ("app_store", "ru", False), ("google_play", "lang-ru", False), ("rustore", "ru", True)])
         self.assertEqual(j({"name": "D", "markets": ["by"], "stores": False}), [("onliner", "by", True)])
         self.assertEqual(j({"name": "K", "markets": ["ru"], "stores": False, "2gis": ["70000001234567"], "yandex_maps": [{"id": 1124715036, "market": "by"}], "urls": ["https://a.b/c"]}),
             [("2gis", "ru", False), ("yandex_maps", "by", False), ("https://a.b/c", "global", False)])
+        cm.LOCAL = True
+        self.assertEqual(j({"name": "D", "markets": ["by"], "stores": False, "onliner": False, "trustpilot": "d.com"}),
+            [("wildberries", "by", True), ("trustpilot", "global", False)])
     def test_merge(self):
         m = merge([{"id": "1", "date": "2026-01-01"}], [{"id": "1", "date": "2026-01-01"}, {"id": "2", "date": "2026-02-01"}])
         self.assertEqual([x["id"] for x in m], ["2", "1"])
