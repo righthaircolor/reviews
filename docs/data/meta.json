@@ -1,1 +1,42 @@
-{"log":[]}
+{
+ "updated": "2026-11-16T22:00:38+00:00",
+ "total": 3500,
+ "added": 3500,
+ "log": [
+  {
+   "brand": "Яндекс Go",
+   "source": "app_store",
+   "market": "by",
+   "ok": true,
+   "count": 500
+  },
+  {
+   "brand": "Яндекс Go",
+   "source": "app_store",
+   "market": "ru",
+   "ok": true,
+   "count": 500
+  },
+  {
+   "brand": "Яндекс Go",
+   "source": "google_play",
+   "market": "lang-ru",
+   "ok": true,
+   "count": 1000
+  },
+  {
+   "brand": "Duolingo",
+   "source": "app_store",
+   "market": "us",
+   "ok": true,
+   "count": 500
+  },
+  {
+   "brand": "Duolingo",
+   "source": "google_play",
+   "market": "lang-en",
+   "ok": true,
+   "count": 1000
+  }
+ ]
+}
